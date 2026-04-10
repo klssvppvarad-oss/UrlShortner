@@ -1,8 +1,18 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# ✅ ADD THIS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allow all (for testing)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class URLRequest(BaseModel):
     url: str
@@ -14,14 +24,7 @@ def shorten_url(long_url: str) -> str:
             params={"url": long_url},
             timeout=5
         )
-
-        short_url = res.text.strip()
-
-        if "tinyurl.com" in short_url:
-            short_url = short_url.replace("preview.", "")
-
-        return short_url
-
+        return res.text
     except:
         return "error"
 
@@ -32,5 +35,5 @@ def shorten(data: URLRequest):
         "short": shorten_url(data.url)
     }
 
-# 👇 REQUIRED for Vercel
+# ✅ Required for Vercel
 handler = app
